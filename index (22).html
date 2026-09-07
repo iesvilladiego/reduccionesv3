@@ -1643,7 +1643,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
         /* Nota: las funciones de la bolsa no contabilizan hasta activarse */
@@ -1654,56 +1653,6 @@
             display: flex;
             align-items: center;
             gap: 6px;
-        }
-
-        /* Acordeón de la bolsa (req. usuario): inicialmente replegada; la
-           cabecera completa es clicable para plegar/desplegar el cuerpo. */
-        .funciones-band-header {
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-            border-radius: 10px;
-            transition: background 0.15s;
-        }
-
-        .funciones-band-header:hover { background: rgba(242, 196, 216, 0.28); }
-
-        .funciones-band-header:focus-visible {
-            outline: 2px solid #c2255c;
-            outline-offset: 2px;
-        }
-
-        .funciones-band-chevron {
-            font-size: 0.78em;
-            margin-left: 2px;
-            transition: transform 0.2s ease;
-        }
-
-        /* Explicación/horario y tarjetas viven en el cuerpo plegable */
-        .funciones-band-body { min-width: 0; }
-
-        .funciones-band.collapsed .funciones-band-body { display: none; }
-
-        /* Chevron: hacia abajo = desplegada; girado = replegada */
-        .funciones-band.collapsed .funciones-band-chevron { transform: rotate(-90deg); }
-
-        /* Contador de la cabecera: visible también con la bolsa plegada */
-        .funciones-band-count {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #a61e4d;
-            background: #ffdeeb;
-            border: 1px solid #fcc2d7;
-            border-radius: 999px;
-            padding: 2px 10px;
-            margin-left: 4px;
-            white-space: nowrap;
-        }
-
-        /* Al imprimir, la bolsa sale desplegada aunque esté plegada en pantalla */
-        @media print {
-            .funciones-band.collapsed .funciones-band-body { display: block !important; }
-            .funciones-band-header { cursor: default; }
         }
 
         .funciones-grid {
@@ -3216,11 +3165,6 @@
     // Data model
     let equipoDirectivo = null;
     let data = null;
-
-    // Acordeón de la "Bolsa de funciones" (req. usuario): inicialmente REPLEGADA
-    // en cada sesión; el estado se conserva entre re-renderizados mientras el
-    // usuario trabaja y no se persiste (cada recarga vuelve a empezar plegada).
-    let bolsaExpanded = false;
 
     // Department defaults for "Departamentos de Coordinación Didáctica".
     // The old 3 areas (sociolingüística, científico-tecnológica, artística) are now
@@ -5435,23 +5379,14 @@
 
         html += '</div>';
 
-        // ===== BOLSA DE FUNCIONES CON REDUCCIÓN LECTIVA ASIGNADA =====
-        // Acordeón (req. usuario): inicialmente REPLEGADA; la cabecera completa
-        // pliega/despliega el cuerpo (hint + tarjetas). El contador de funciones
-        // y horas queda a la vista también con la bolsa plegada.
-        var bolsaN = (data.funciones || []).length;
-        var bolsaHoras = 0;
-        (data.funciones || []).forEach(function(f) { bolsaHoras += (parseInt(f.horas, 10) || 0); });
-        html += '<div class="funciones-band' + (bolsaExpanded ? '' : ' collapsed') + '">';
-        html += '<div class="funciones-band-header" data-bolsa-toggle role="button" tabindex="0" aria-expanded="' + (bolsaExpanded ? 'true' : 'false') + '" title="' + (bolsaExpanded ? 'Plegar la bolsa de funciones' : 'Desplegar la bolsa de funciones') + '">';
-        html += '<h3 class="funciones-band-title"><i class="fas fa-briefcase"></i> BOLSA DE FUNCIONES CON REDUCCIÓN LECTIVA ASIGNADA';
-        html += '<span class="funciones-band-count">' + bolsaN + (bolsaN === 1 ? ' función' : ' funciones') + ' · ' + bolsaHoras + ' h</span>';
-        html += '<i class="fas fa-chevron-down funciones-band-chevron" aria-hidden="true"></i></h3>';
+        // ===== BOLSA DE FUNCIONES CON REDUCCIÓN LECTIVA ASIGNADA (banda a ancho completo) =====
+        html += '<div class="funciones-band">';
+        html += '<div class="funciones-band-header">';
+        html += '<h3 class="funciones-band-title"><i class="fas fa-briefcase"></i> BOLSA DE FUNCIONES CON REDUCCIÓN LECTIVA ASIGNADA</h3>';
         if (isAdmin) {
             html += '<button class="dept-action-btn dept-add-btn section-add-btn" data-func-add><i class="fas fa-plus"></i> Añadir función</button>';
         }
         html += '</div>';
-        html += '<div class="funciones-band-body">';
         html += '<div class="funciones-band-hint"><i class="fas fa-info-circle"></i> Las funciones de la bolsa no contabilizan como reducciones hasta que se activan y pasan a "Otras reducciones lectivas".</div>';
         if (!(data.funciones || []).length) {
             html += '<div class="profesorado-empty"><i class="fas fa-info-circle"></i> La bolsa está vacía. Pulsa "Añadir función" para crear una tarjeta con la función y su reducción lectiva asignada; después podrás activarla con el botón "Activar" para crear su tarjeta en "Otras reducciones lectivas".</div>';
@@ -5483,8 +5418,7 @@
             });
             html += '</div>';
         }
-        html += '</div>'; // /.funciones-band-body
-        html += '</div>'; // /.funciones-band
+        html += '</div>';
 
         container.innerHTML = html;
     }
@@ -6491,19 +6425,6 @@
                 return;
             }
 
-            // ===== Acordeón de la bolsa: plegar/desplegar (req. usuario) =====
-            // La cabecera completa es clicable; el botón "Añadir función" vive
-            // dentro de ella pero ya se gestionó arriba con return, y el guard
-            // adicional evita pliegues si el orden de los checks cambia.
-            var bolsaHead = e.target.closest('[data-bolsa-toggle]');
-            if (bolsaHead && !e.target.closest('[data-func-add]')) {
-                bolsaExpanded = !bolsaExpanded;
-                var bandBox = bolsaHead.closest('.funciones-band');
-                if (bandBox) bandBox.classList.toggle('collapsed', !bolsaExpanded);
-                bolsaHead.setAttribute('aria-expanded', bolsaExpanded ? 'true' : 'false');
-                return;
-            }
-
             var funcEditBtn = e.target.closest('[data-func-edit]');
             if (funcEditBtn) {
                 openFuncionModal(funcEditBtn.dataset.funcEdit);
@@ -6626,8 +6547,6 @@
                     horas: bagHoras,
                     headerClass: rBag.headerClass || 'otros-header'
                 });
-                // Despliega la bolsa para que se vea la tarjeta que acaba de entrar
-                bolsaExpanded = true;
                 renderOtrasReducciones();
                 recalculateAll();
                 debouncedFirebaseSave();
@@ -6648,16 +6567,6 @@
                 debouncedFirebaseSave();
                 return;
             }
-        });
-
-        // Acordeón de la bolsa: accesible por teclado (Enter o Espacio activan
-        // la cabecera con focus, que tiene role="button" y tabindex="0").
-        otrasSection.addEventListener('keydown', function(e) {
-            if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
-            var head = e.target.closest ? e.target.closest('[data-bolsa-toggle]') : null;
-            if (!head) return;
-            e.preventDefault();
-            head.click();
         });
 
         // =============================================
@@ -7192,9 +7101,6 @@
         }
 
         closeFuncionModal();
-        // Al crear/guardar desde el modal (disponible también con la bolsa
-        // plegada), despliega la bolsa para que el resultado sea visible.
-        bolsaExpanded = true;
         renderAll();
         recalculateAll();
         debouncedFirebaseSave();
