@@ -1,10 +1,8 @@
-const CACHE_NAME = 'reducciones-v56';
+const CACHE_NAME = 'reducciones-v55';
 const ASSETS = [
     './',
     './index.html',
     './manifest.json',
-    './manual-administrador.pdf',
-    './manual-profesorado.pdf',
     './icons/favicon-16x16.png',
     './icons/favicon-32x32.png',
     './icons/icon-144x144.png',
