@@ -278,6 +278,30 @@
             background: rgba(255,255,255,0.25);
         }
 
+        /* Botón "Manual": descarga el PDF del manual del perfil activo
+           (req. usuario). Es un <a download> con estilo coherente con la
+           cabecera; el href lo fija setupUserInterface() según el rol. */
+        .manual-btn-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: inherit;
+            text-decoration: none;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+
+        .manual-btn-header:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
         .sync-status {
             display: flex;
             align-items: center;
@@ -2597,6 +2621,7 @@
                         <span class="role-badge" id="roleBadge"></span>
                     </div>
                     <button class="resumen-open-btn" id="openResumenBtn" title="Ver el resumen general de horas"><i class="fas fa-chart-bar"></i> Resumen general</button>
+                    <a class="manual-btn-header" id="manualBtn" title="Descargar el manual de uso en PDF"><i class="fas fa-book"></i> Manual</a>
                     <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
                     <div class="install-button-container">
                         <button class="install-btn-header" id="installBtn"><i class="fas fa-download"></i> Instalar</button>
@@ -3888,6 +3913,17 @@
         const badge = document.getElementById('roleBadge');
         badge.textContent = currentUser.role === 'admin' ? 'Admin' : 'Usuario';
         badge.className = 'role-badge ' + currentUser.role;
+
+        // Botón "Manual" de la cabecera: cada perfil descarga su propio
+        // manual en PDF (req. usuario). Los PDF viven junto a index.html.
+        const manualBtn = document.getElementById('manualBtn');
+        if (manualBtn) {
+            const esAdmin = currentUser.role === 'admin';
+            const pdf = esAdmin ? 'manual-administrador.pdf' : 'manual-profesorado.pdf';
+            manualBtn.href = pdf;
+            manualBtn.setAttribute('download', pdf);
+            manualBtn.title = 'Descargar el manual de uso (' + (esAdmin ? 'Administrador' : 'Profesorado') + ') en PDF';
+        }
 
         if (currentUser.role === 'admin') {
             document.getElementById('usersPanel').style.display = '';
