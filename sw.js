@@ -32,7 +32,7 @@ self.addEventListener('activate', function(event) {
     event.waitUntil(
         caches.keys().then(function(keys) {
             return Promise.all(
-                keys.filter(function(k) { return k !== CACHE_NAME; })
+                keys.filter(function(k) { return k !== CACHE_NAME && k.indexOf('reducciones-') === 0; })
                     .map(function(k) { return caches.delete(k); })
             );
         })
