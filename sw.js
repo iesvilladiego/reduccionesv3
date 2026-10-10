@@ -1,4 +1,6 @@
-const CACHE_NAME = 'reducciones-v3.26';
+// CACHE_NAME ES la versión de la aplicación: la página la lee (chip del
+// banner) y se actualiza sola cuando se publica un sw.js nuevo.
+const CACHE_NAME = 'reducciones-v3.28';
 const ASSETS = [
     './',
     './index.html',
@@ -27,17 +29,45 @@ self.addEventListener('install', function(event) {
     self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: clean old caches, take control of the clients and broadcast the
+// app version (SW_VERSION) so the version chip in the banner updates itself.
 self.addEventListener('activate', function(event) {
     event.waitUntil(
-        caches.keys().then(function(keys) {
-            return Promise.all(
-                keys.filter(function(k) { return k !== CACHE_NAME && k.indexOf('reducciones-') === 0; })
-                    .map(function(k) { return caches.delete(k); })
-            );
-        })
+        caches.keys()
+            .then(function(keys) {
+                return Promise.all(
+                    keys.filter(function(k) { return k !== CACHE_NAME && k.indexOf('reducciones-') === 0; })
+                        .map(function(k) { return caches.delete(k); })
+                );
+            })
+            .then(function() { return self.clients.claim(); })
+            .then(function() { return self.clients.matchAll({ includeUncontrolled: true }); })
+            .then(function(clientList) {
+                clientList.forEach(function(client) {
+                    try {
+                        client.postMessage({ type: 'SW_VERSION', version: CACHE_NAME });
+                    } catch (e) { /* client may be gone */ }
+                });
+            })
     );
-    self.clients.claim();
+});
+
+// Respond to version requests from the page (the "vX.Y" chip in the banner).
+self.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'GET_VERSION') {
+        var target = event.source || (event.ports && event.ports[0]);
+        if (target && typeof target.postMessage === 'function') {
+            try {
+                target.postMessage({ type: 'SW_VERSION', version: CACHE_NAME });
+            } catch (e) { /* ignore */ }
+        } else {
+            self.clients.matchAll({ includeUncontrolled: true }).then(function(clientList) {
+                clientList.forEach(function(client) {
+                    try { client.postMessage({ type: 'SW_VERSION', version: CACHE_NAME }); } catch (e) {}
+                });
+            });
+        }
+    }
 });
 
 // Fetch: network-first with cache fallback
