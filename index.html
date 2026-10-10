@@ -171,21 +171,22 @@
             position: relative;
         }
 
-        /* El contenido del banner ocupa TODA su anchura (req. usuario):
-           sin tope de 1200 px. El grupo de contexto (curso, sincronización,
-           resumen, instalar) queda a la izquierda y el grupo de sesión
-           (Manual · usuario · Cerrar sesión) se alinea a la derecha. */
+        /* Banner en DOS FILAS (req. usuario): arriba el título de la app con
+           el chip de versión, y debajo TODOS los botones del banner en una
+           sola fila a lo ancho completo. Los controles de contexto (curso,
+           sincronización, resumen, instalar) arrancan a la izquierda y el
+           grupo de sesión (Manual · usuario · Cerrar sesión) se alinea al
+           extremo derecho de la MISMA fila. */
         .header-content {
             width: 100%;
             margin: 0 auto;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px 20px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px 0;
         }
 
-        .header-left {
+        .header-title-row {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -251,28 +252,24 @@
 
         .app-version-chip.pending { opacity: 0.55; }
 
-        .header-right {
+        .header-toolbar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 10px 20px;
             flex-wrap: wrap;
-            flex: 1 1 auto;
+            width: 100%;
             min-width: 0;
         }
 
-        /* Grupos del banner: a la izquierda los controles de contexto y a la
-           derecha los de sesión (Manual de xxx · usuario · Cerrar sesión). */
-        .header-group {
+        /* Grupo de sesión (Manual de xxx · chip de usuario · Cerrar sesión):
+           mismo grupo compacto, anclado al extremo derecho de la fila de
+           botones para conservar el orden pedido por el usuario. */
+        .header-session-group {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
             min-width: 0;
-        }
-
-        .header-group-session {
-            justify-content: flex-end;
             margin-left: auto;
         }
 
@@ -2533,14 +2530,13 @@
             .resumen-item.total { grid-column: span 1; }
 
             header { padding: 14px 18px; }
-            /* Móvil: el banner se apila. Cada grupo ocupa su fila completa;
-               el grupo de sesión mantiene el orden Manual · usuario · Cerrar
-               sesión y se alinea a la derecha (mismo criterio que escritorio). */
-            .header-content { flex-direction: column; align-items: stretch; gap: 10px; }
-            .header-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
-            .header-right { width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
-            .header-group { width: 100%; }
-            .header-group-session { justify-content: flex-end; }
+            /* Móvil: el banner ya es de dos filas (título + fila de botones);
+               la fila de botones envuelve en varias líneas visuales y el grupo
+               de sesión mantiene el orden Manual · usuario · Cerrar sesión
+               pegado al extremo derecho (mismo criterio que escritorio). */
+            .header-title-row { flex-wrap: nowrap; justify-content: space-between; }
+            .header-toolbar { gap: 8px 10px; }
+            .header-session-group { gap: 8px; }
             h1 { font-size: 1.35rem; }
             .app-version-chip { padding: 3px 10px; font-size: 0.66rem; }
             .user-name { max-width: 30vw; }
@@ -2611,7 +2607,7 @@
             .remove-row-btn,
             footer { display: none !important; }
 
-            .header-right { display: none !important; }
+            .header-toolbar { display: none !important; }
 
             .areas-container {
                 display: grid !important;
@@ -2804,7 +2800,7 @@
             .add-user-row .add-user-password { grid-column: auto; }
 
             /* Botones de acción del banner: fila aprovechada */
-            .header-group-context { gap: 8px; }
+            .header-toolbar { gap: 8px; }
             .resumen-open-btn { flex: 0 1 auto; }
 
             /* Acordeones: cabeceras táctiles más cómodas */
@@ -2826,32 +2822,33 @@
             }
             .notification.show { transform: translateY(0); }
 
-            /* Grupo de sesión en móvil estrecho: "Manual de xxx" ocupa su fila
-               (etiqueta larga) y el chip de usuario queda a la izquierda del
-               botón "Cerrar sesión", como en escritorio. */
-            .header-group-session { gap: 8px; }
-            .header-group-session .manual-btn-header {
-                flex: 1 1 100%;
+            /* Fila de botones en móvil estrecho: la fila envuelve en varias
+               líneas visuales manteniendo el orden; los controles táctiles
+               crecen a altura cómoda (42 px). El grupo de sesión conserva el
+               orden Manual · usuario · Cerrar sesión, pegado a la derecha. */
+            .header-toolbar { gap: 8px; }
+            .header-session-group { gap: 8px; }
+            .header-session-group .manual-btn-header {
+                flex: 1 1 auto;
                 justify-content: center;
                 min-height: 42px;
             }
-            .header-group-session .user-info {
+            .header-session-group .user-info {
                 flex: 1 1 auto;
                 min-width: 0;
                 justify-content: flex-start;
                 min-height: 42px;
             }
-            .header-group-session .logout-btn { flex: 0 1 auto; min-height: 42px; }
+            .header-session-group .logout-btn { flex: 0 1 auto; min-height: 42px; }
             .user-name { max-width: 32vw; }
             .role-badge { font-size: 0.62rem; padding: 2px 8px; }
 
-            .header-group-context { gap: 8px; }
-            .header-group-context .resumen-open-btn {
-                flex: 1 1 100%;
+            .resumen-open-btn {
+                flex: 1 1 auto;
                 justify-content: center;
                 min-height: 42px;
             }
-            .header-group-context .install-btn-header { min-height: 42px; }
+            .install-btn-header { min-height: 42px; }
             .course-selector { flex: 1 1 auto; min-width: 0; }
             .course-selector select { max-width: 52vw; }
             .sync-status { max-width: 160px; }
@@ -2863,7 +2860,7 @@
 
         /* Móviles muy estrechos */
         @media (max-width: 400px) {
-            .header-left { gap: 8px; }
+            .header-title-row { gap: 8px; }
             .app-version-chip { padding: 3px 8px; }
             .user-name { max-width: 26vw; }
         }
@@ -2872,7 +2869,8 @@
         @media (max-height: 480px) and (orientation: landscape) {
             body { padding: 6px; }
             header { padding: 10px 16px; }
-            .header-content { flex-wrap: wrap; row-gap: 8px; }
+            .header-content { gap: 6px 0; }
+            .header-toolbar { gap: 6px 10px; }
             .sync-sub { display: none; }
         }
 
@@ -2903,35 +2901,34 @@
     <div class="container" id="mainApp" style="display:none;">
         <header>
             <div class="header-content">
-                <div class="header-left">
+                <!-- FILA 1: título de la app + chip de versión -->
+                <div class="header-title-row">
                     <h1><i class="fas fa-clock"></i> <span class="header-title-text">Reducciones Horarias</span></h1>
                     <!-- Chip de versión: se rellena de forma dinámica desde el
                          service worker (CACHE_NAME de sw.js) -->
                     <span class="app-version-chip pending" id="appVersionChip" title="Versión de la aplicación (service worker)"><i class="fas fa-code-branch"></i> v…</span>
                 </div>
-                <div class="header-right">
-                    <!-- Grupo de CONTEXTO (izquierda del banner): curso,
-                         estado de sincronización, resumen general e instalación -->
-                    <div class="header-group header-group-context">
-                        <div class="course-selector">
-                            <label><i class="fas fa-calendar"></i> Curso:</label>
-                            <select id="courseSelector"></select>
-                        </div>
-                        <div class="sync-status state-connecting" id="syncStatus" title="Guardado automático activado: cada cambio se guarda al instante en este dispositivo y se sincroniza con la nube (Firebase). Otros dispositivos conectados ven los cambios en tiempo real.">
-                            <span class="sync-icon"><i class="fas fa-sync-alt" id="syncIconEl"></i></span>
-                            <span class="sync-labels">
-                                <span class="sync-main" id="syncText">Conectando...</span>
-                                <span class="sync-sub" id="syncSub"></span>
-                            </span>
-                        </div>
-                        <button class="resumen-open-btn" id="openResumenBtn" title="Ver el resumen general de horas"><i class="fas fa-chart-bar"></i> Resumen general</button>
-                        <div class="install-button-container">
-                            <button class="install-btn-header" id="installBtn"><i class="fas fa-download"></i> Instalar</button>
-                        </div>
+                <!-- FILA 2: TODOS los botones del banner en una sola fila.
+                     Controles de contexto a la izquierda y, anclado a la
+                     derecha, el grupo de sesión en el orden pedido:
+                     Manual de xxx · chip de usuario · Cerrar sesión -->
+                <div class="header-toolbar">
+                    <div class="course-selector">
+                        <label><i class="fas fa-calendar"></i> Curso:</label>
+                        <select id="courseSelector"></select>
                     </div>
-                    <!-- Grupo de SESIÓN (derecha del banner), en orden:
-                         Manual del perfil · chip de usuario · Cerrar sesión -->
-                    <div class="header-group header-group-session">
+                    <div class="sync-status state-connecting" id="syncStatus" title="Guardado automático activado: cada cambio se guarda al instante en este dispositivo y se sincroniza con la nube (Firebase). Otros dispositivos conectados ven los cambios en tiempo real.">
+                        <span class="sync-icon"><i class="fas fa-sync-alt" id="syncIconEl"></i></span>
+                        <span class="sync-labels">
+                            <span class="sync-main" id="syncText">Conectando...</span>
+                            <span class="sync-sub" id="syncSub"></span>
+                        </span>
+                    </div>
+                    <button class="resumen-open-btn" id="openResumenBtn" title="Ver el resumen general de horas"><i class="fas fa-chart-bar"></i> Resumen general</button>
+                    <div class="install-button-container">
+                        <button class="install-btn-header" id="installBtn"><i class="fas fa-download"></i> Instalar</button>
+                    </div>
+                    <div class="header-session-group">
                         <a class="manual-btn-header" id="manualBtn" title="Descargar el manual de uso en PDF"><i class="fas fa-book"></i> Manual</a>
                         <div class="user-info" id="userInfo">
                             <span class="user-name" id="userName"></span>
@@ -3458,85 +3455,18 @@
     const MIGRATION_FLAG = 'rh_migrated_v1';
 
     // =============================================
-    // DATA MIGRATION
-    // Migrates data from old (unprefixed) collections
-    // to the new namespaced collections on first load.
+    // DATA MIGRATION (legacy → colecciones con prefijo rh_)
     // =============================================
+    // DESACTIVADA definitivamente (incidencia 07/09/2026): la copia "additive
+    // only" desde las colecciones legacy sin prefijo llegó a pisar datos
+    // reales recién republicados con documentos obsoletos de mayo. Todas las
+    // instalaciones ya usan las colecciones rh_*, que son la única fuente de
+    // verdad. La función conserva su nombre y su sello local de "migración
+    // hecha" para que cualquier copia antigua del código que aún contenga la
+    // lógica de copia no vuelva a ejecutarla jamás.
     async function migrateOldDataIfNeeded() {
-        if (localStorage.getItem(MIGRATION_FLAG)) return;
-        // DESACTIVADA (incidencia 07/09/2026): esta copia "additive only" rellenó
-        // el doc rh_cursos/2026-2027 —recién borrado por la contención del seed—
-        // con el documento VIEJO de mayo de la colección legacy 'cursos'
-        // (lastModified 2026-05-30, sin profesorado), pisando la republicación
-        // real del dispositivo principal. La migración ya cumplió su función
-        // (todas las instalaciones usan rh_*): se sella la marca y se aborta
-        // para que ninguna copia obsoleta vuelva a pisar datos nuevos.
-        localStorage.setItem(MIGRATION_FLAG, new Date().toISOString());
-        console.log('[Migración] DESACTIVADA tras la incidencia del 07/09/2026 (las colecciones rh_* son la única fuente).');
-        return;
-        console.log('[Migración] Comprobando datos antiguos (solo copia documentos que falten, nunca sobrescribe)...');
-        try {
-            // --- Migrate users ---
-            // ADDITIVE ONLY: if the doc already exists in the rh_ collection
-            // (newer data), the legacy copy is skipped. This prevents a fresh
-            // device from rolling back production data with stale legacy docs.
-            try {
-                const oldUsersSnap = await db.collection('users').get();
-                let userCount = 0;
-                for (const doc of oldUsersSnap.docs) {
-                    const target = await db.collection(COL_USERS).doc(doc.id).get();
-                    if (target.exists) continue;
-                    const d = doc.data();
-                    d._app = APP_TAG;
-                    await db.collection(COL_USERS).doc(doc.id).set(d);
-                    userCount++;
-                }
-                if (userCount > 0) {
-                    console.log('[Migración] ' + userCount + ' usuarios migrados a ' + COL_USERS);
-                }
-            } catch(e) {
-                console.warn('[Migración] Error migrando usuarios (puede que no existan):', e.message);
-            }
-
-            // --- Migrate cursos (additive only) ---
-            try {
-                const oldCursosSnap = await db.collection('cursos').get();
-                let cursoCount = 0;
-                for (const doc of oldCursosSnap.docs) {
-                    const target = await db.collection(COL_CURSOS).doc(doc.id).get();
-                    if (target.exists) continue;
-                    const d = doc.data();
-                    d._app = APP_TAG;
-                    await db.collection(COL_CURSOS).doc(doc.id).set(d);
-                    cursoCount++;
-                }
-                if (cursoCount > 0) {
-                    console.log('[Migración] ' + cursoCount + ' cursos migrados a ' + COL_CURSOS);
-                }
-            } catch(e) {
-                console.warn('[Migración] Error migrando cursos:', e.message);
-            }
-
-            // --- Migrate cursos_meta (additive only) ---
-            try {
-                const oldMetaDoc = await db.collection('cursos_meta').doc('lista').get();
-                if (oldMetaDoc.exists) {
-                    const target = await db.collection(COL_CURSOS_META).doc('lista').get();
-                    if (!target.exists) {
-                        const d = oldMetaDoc.data();
-                        d._app = APP_TAG;
-                        await db.collection(COL_CURSOS_META).doc('lista').set(d);
-                        console.log('[Migración] cursos_meta migrado a ' + COL_CURSOS_META);
-                    }
-                }
-            } catch(e) {
-                console.warn('[Migración] Error migrando cursos_meta:', e.message);
-            }
-
+        if (!localStorage.getItem(MIGRATION_FLAG)) {
             localStorage.setItem(MIGRATION_FLAG, new Date().toISOString());
-            console.log('[Migración] Comprobación completada.');
-        } catch(e) {
-            console.error('[Migración] Error general:', e);
         }
     }
 
@@ -3566,6 +3496,13 @@
     // Data model
     let equipoDirectivo = null;
     let data = null;
+
+    // ¿Hay sesión abierta con perfil de Administrador? Único punto de verdad
+    // del chequeo de rol (antes la condición compuesta se repetía en 26
+    // puntos del código: render, delegación de eventos y bootstrap).
+    function isAdminUser() {
+        return !!(currentUser && currentUser.role === 'admin');
+    }
 
     // Acordeón de la "Bolsa de funciones" (req. usuario): inicialmente REPLEGADA
     // en cada sesión; el estado se conserva entre re-renderizados mientras el
@@ -3609,7 +3546,7 @@
         // Extract starting year from course string (e.g., "2024-2025" -> 2024)
         var m = (courseName || '').match(/(\d{4})/);
         if (m) {
-            var year = parseInt(m[1]);
+            var year = parseInt(m[1], 10);
             // From 2026-2027 onwards: 2 hours. From 2024-2025: 1 hour. Before: 0 hours.
             if (year >= 2026) return 2;
             if (year >= 2024) return 1;
@@ -4092,6 +4029,16 @@
         } catch (e) { return {}; }
     }
 
+    // Usuarios eliminados en este dispositivo (lápidas para que no reaparezcan
+    // desde la caché de Firestore). Hardening: tolerante a un valor corrupto
+    // en localStorage (antes un JSON inválido rompía login/panel de usuarios).
+    function getDeletedUsers() {
+        try {
+            var raw = JSON.parse(localStorage.getItem('deletedUsers') || '[]');
+            return Array.isArray(raw) ? raw : [];
+        } catch (e) { return []; }
+    }
+
     function saveLocalUsers(users) {
         localStorage.setItem('app_users', JSON.stringify(users));
     }
@@ -4171,7 +4118,7 @@
             var localUsers = getLocalUsers();
 
             // Exclude locally deleted users from the check
-            var deletedArr = JSON.parse(localStorage.getItem('deletedUsers') || '[]');
+            var deletedArr = getDeletedUsers();
             var isDeleted = deletedArr.indexOf(username) !== -1;
 
             if (isDeleted) {
@@ -4264,7 +4211,7 @@
     }
 
     async function loadUsersPanel() {
-        if (!currentUser || currentUser.role !== 'admin') return;
+        if (!isAdminUser()) return;
 
         const body = document.getElementById('usersPanelBody');
 
@@ -4278,7 +4225,7 @@
         });
 
         // Try to merge with Firestore data (but exclude locally deleted users)
-        var deletedArr = JSON.parse(localStorage.getItem('deletedUsers') || '[]');
+        var deletedArr = getDeletedUsers();
         try {
             var snapshot = await db.collection(COL_USERS).get();
             snapshot.forEach(function(doc) {
@@ -4333,7 +4280,7 @@
             html += '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>Admin</option>';
             html += '<option value="user"' + (u.role === 'user' ? ' selected' : '') + '>Usuario</option>';
             html += '</select></td>';
-            html += '<td>' + (isSuperAdmin ? '' : '<button class="user-delete-btn" data-user-username="' + escapeHtml(u.username) + '" title="Eliminar"><i class="fas fa-trash"></i></button>') + '</td>';
+            html += '<td>' + (isSuperAdmin ? '' : '<button class="user-delete-btn" data-user-username="' + escapeHtml(u.username) + '"' + (isSelf ? ' disabled title="No puedes eliminar tu propio usuario mientras la sesión está abierta"' : ' title="Eliminar"') + '><i class="fas fa-trash"></i></button>') + '</td>';
             html += '</tr>';
         });
         html += '</tbody></table>';
@@ -4374,6 +4321,13 @@
         body.querySelectorAll('.user-delete-btn').forEach(function(btn) {
             btn.addEventListener('click', async function() {
                 var username = this.dataset.userUsername;
+                // Bugfix: un administrador no puede eliminarse a sí mismo desde
+                // su propia sesión (la variable isSelf existía pero nunca se
+                // llegaba a usar: la protección quedó a medias).
+                if (username === currentUser.username) {
+                    showNotification('No puedes eliminar tu propio usuario mientras la sesión está abierta', 'error');
+                    return;
+                }
                 if (!confirm('¿Eliminar al usuario ' + username + '?')) return;
 
                 // Delete from localStorage
@@ -4382,7 +4336,7 @@
                 saveLocalUsers(localUsers);
 
                 // Always track as deleted so it doesn't reappear from Firestore cache
-                var deletedArr = JSON.parse(localStorage.getItem('deletedUsers') || '[]');
+                var deletedArr = getDeletedUsers();
                 if (deletedArr.indexOf(username) === -1) deletedArr.push(username);
                 localStorage.setItem('deletedUsers', JSON.stringify(deletedArr));
 
@@ -4504,7 +4458,7 @@
         }
 
         // Save current data to Firebase
-        var saveOk = await saveToFirebaseSilent();
+        await saveToFirebaseSilent();
         saveToLocal();
 
         // Switch to new course
@@ -4551,8 +4505,8 @@
         }
         // Validate that second year = first year + 1
         var parts = courseName.split('-');
-        var startYear = parseInt(parts[0]);
-        var endYear = parseInt(parts[1]);
+        var startYear = parseInt(parts[0], 10);
+        var endYear = parseInt(parts[1], 10);
         if (endYear !== startYear + 1) {
             showNotification('El segundo año debe ser el siguiente al primero (ej: 2026-2027)', 'error');
             createNewCourse._pending = false;
@@ -4885,7 +4839,7 @@
             listEl.innerHTML = '<div class="backup-empty">Todavía no hay copias de seguridad en la nube. Crea la primera con el botón «Crear copia de seguridad».</div>';
             return;
         }
-        var isAdmin = !!(currentUser && currentUser.role === 'admin');
+        var isAdmin = isAdminUser();
         var shown = _backupsCache.slice(0, 50);
         var html = '';
         shown.forEach(function(b) {
@@ -4992,7 +4946,7 @@
     }
 
     async function restoreCloudBackup(id) {
-        if (!currentUser || currentUser.role !== 'admin') {
+        if (!isAdminUser()) {
             showNotification('Solo un administrador puede restaurar copias', 'error');
             return;
         }
@@ -5100,7 +5054,7 @@
     }
 
     async function deleteCloudBackup(id) {
-        if (!currentUser || currentUser.role !== 'admin') {
+        if (!isAdminUser()) {
             showNotification('Solo un administrador puede eliminar copias', 'error');
             return;
         }
@@ -5336,7 +5290,7 @@
 
     function renderDirectivo() {
         const container = document.getElementById('directivoContent');
-        const disabled = currentUser && currentUser.role !== 'admin' ? ' disabled' : '';
+        const disabled = isAdminUser() ? '' : ' disabled';
 
         let html = '<table><thead><tr><th>Cargo</th><th>Nombre</th><th>Horas de reducción</th></tr></thead><tbody>';
 
@@ -5359,7 +5313,7 @@
             html += '</tr>';
         });
 
-        const totalDir = (equipoDirectivo.director.name && equipoDirectivo.director.name.trim() ? equipoDirectivo.director.hours : 0) + (equipoDirectivo.jefatura.name && equipoDirectivo.jefatura.name.trim() ? equipoDirectivo.jefatura.hours : 0) + (equipoDirectivo.secretaria.name && equipoDirectivo.secretaria.name.trim() ? equipoDirectivo.secretaria.hours : 0);
+        const totalDir = dirTotalHours();
         html += '<tr class="directivo-total"><td colspan="2">TOTAL</td><td><span id="total-directivo">' + totalDir + '</span></td></tr>';
         html += '</tbody></table>';
 
@@ -5387,53 +5341,50 @@
         return 'otros-header';
     }
 
-    // Updates a datalist to show teachers from the global profesorado list
-    // that are NOT already used in other rows of the same department.
-    // If a currentValue is given, it is always included (the current row's value).
-    function updateDatalistForInput(input) {
-        var deptId = input.dataset.dept;
-        if (!deptId) return;
-        var listId = input.getAttribute('list');
-        if (!listId) return;
-        var dl = document.getElementById(listId);
-        if (!dl) return;
-
-        var currentValue = input.value.trim().toLowerCase();
-        var dep = getDcd(deptId);
-
-        // Collect names currently used in this department (from data model)
-        var usedNames = {};
-        if (dep) {
-            dep.professors.forEach(function(p) {
-                if (p.name) usedNames[p.name.toLowerCase()] = true;
-            });
-        }
-
-        // Build options: profesorado items not already used, plus the current value
+    // Núcleo común de las datalist de candidatos (DCD y Orientación, antes
+    // duplicadas): rellena la datalist con el profesorado de la plantilla que
+    // NO está ya usado en la sección (usedNames, claves en minúsculas) más el
+    // valor actual del input (aunque no esté en la plantilla), todo ordenado
+    // alfabéticamente.
+    function fillTeacherDatalist(dl, usedNames, currentValue, rawValue) {
         var options = [];
         (data.profesorado || []).forEach(function(name) {
             var nl = name.toLowerCase();
-            if (nl === currentValue) {
-                options.push(name);
-            } else if (!usedNames[nl]) {
-                options.push(name);
-            }
+            if (nl === currentValue || !usedNames[nl]) options.push(name);
         });
-
         // Also include current value even if not in profesorado (user typed it manually)
         if (currentValue && !options.some(function(o) { return o.toLowerCase() === currentValue; })) {
-            options.push(input.value.trim());
+            options.push(rawValue);
         }
-
         // La lista de profesorado candidato se muestra SIEMPRE ordenada alfabéticamente
         options.sort(function(a, b) { return a.localeCompare(b, 'es'); });
-
         dl.innerHTML = '';
         options.forEach(function(name) {
             var opt = document.createElement('option');
             opt.value = name;
             dl.appendChild(opt);
         });
+    }
+
+    // Updates a datalist to show teachers from the global profesorado list
+    // that are NOT already used in other rows of the same department.
+    // If a currentValue is given, it is always included (the current row's value).
+    function updateDatalistForInput(input) {
+        var deptId = input.dataset.dept;
+        if (!deptId) return;
+        var dl = document.getElementById(input.getAttribute('list'));
+        if (!dl) return;
+
+        // Collect names currently used in this department (from data model)
+        var usedNames = {};
+        var dep = getDcd(deptId);
+        if (dep) {
+            dep.professors.forEach(function(p) {
+                if (p.name) usedNames[p.name.toLowerCase()] = true;
+            });
+        }
+
+        fillTeacherDatalist(dl, usedNames, input.value.trim().toLowerCase(), input.value.trim());
     }
 
     // Updates datalists for ALL inputs in a given DCD department
@@ -5446,7 +5397,7 @@
 
     // Updates datalists for every name input in the app (admin only)
     function updateAllDatalists() {
-        if (!(currentUser && currentUser.role === 'admin')) return;
+        if (!isAdminUser()) return;
         (data.dcd || []).forEach(function(dep) {
             updateAllDatalistsForDept(dep.id);
         });
@@ -5456,41 +5407,18 @@
         });
     }
 
+    // Datalist de Orientación: mismos candidatos que DCD (núcleo común
+    // fillTeacherDatalist), con los nombres ya usados en Orientación fuera.
     function updateOrientacionDatalist(input) {
         var dl = document.getElementById('dl-orientacion');
         if (!dl) return;
-        var currentValue = input.value.trim().toLowerCase();
 
         var usedNames = {};
-        if (data && data.orientacion) {
-            data.orientacion.forEach(function(p) {
-                if (p.name) usedNames[p.name.toLowerCase()] = true;
-            });
-        }
-
-        var options = [];
-        (data.profesorado || []).forEach(function(name) {
-            var nl = name.toLowerCase();
-            if (nl === currentValue) {
-                options.push(name);
-            } else if (!usedNames[nl]) {
-                options.push(name);
-            }
+        (data && data.orientacion ? data.orientacion : []).forEach(function(p) {
+            if (p.name) usedNames[p.name.toLowerCase()] = true;
         });
 
-        if (currentValue && !options.some(function(o) { return o.toLowerCase() === currentValue; })) {
-            options.push(input.value.trim());
-        }
-
-        // Lista de candidatos ordenada alfabéticamente (igual que en DCD)
-        options.sort(function(a, b) { return a.localeCompare(b, 'es'); });
-
-        dl.innerHTML = '';
-        options.forEach(function(name) {
-            var opt = document.createElement('option');
-            opt.value = name;
-            dl.appendChild(opt);
-        });
+        fillTeacherDatalist(dl, usedNames, input.value.trim().toLowerCase(), input.value.trim());
     }
 
     function renderDcdDeptCard(dep, isAdmin, disabled) {
@@ -5563,7 +5491,7 @@
     function renderDCD() {
         const wrapper = document.getElementById('dcdGrid');
         if (!wrapper) return;
-        const isAdmin = currentUser && currentUser.role === 'admin';
+        const isAdmin = isAdminUser();
         const disabled = isAdmin ? '' : ' disabled';
 
         let wrapperHtml = '';
@@ -5576,7 +5504,10 @@
 
     function renderOrientacion() {
         const container = document.getElementById('orientacionSection');
-        const isAdmin = currentUser && currentUser.role === 'admin';
+        // Bugfix: guard de existencia igual que renderDCD/renderOtrosDptos
+        // (antes se usaba container sin comprobar: TypeError latente).
+        if (!container) return;
+        const isAdmin = isAdminUser();
         const disabled = isAdmin ? '' : ' disabled';
 
         // Acordeón (req. usuario): la cabecera (título + badge + chevron) pliega
@@ -5648,7 +5579,7 @@
     function renderOtrosDptos() {
         const container = document.getElementById('otrosDptosGrid');
         if (!container) return;
-        const isAdmin = currentUser && currentUser.role === 'admin';
+        const isAdmin = isAdminUser();
         const disabled = isAdmin ? '' : ' disabled';
 
         if (data.otrosDptos.length === 0) {
@@ -5712,7 +5643,7 @@
     function renderOtrasReducciones() {
         const container = document.getElementById('otrasReduccionesSection');
         if (!container) return;
-        const isAdmin = currentUser && currentUser.role === 'admin';
+        const isAdmin = isAdminUser();
         const disabled = isAdmin ? '' : ' disabled';
 
         // Acordeón (req. usuario): la cabecera (título + badge + chevron, y el
@@ -5871,7 +5802,7 @@
     function renderProfesorado() {
         const container = document.getElementById('profesoradoSection');
         if (!container) return;
-        const isAdmin = currentUser && currentUser.role === 'admin';
+        const isAdmin = isAdminUser();
 
         var teachers = data.profesorado || [];
         var html = '';
@@ -5909,6 +5840,18 @@
     // =============================================
     // CALCULATIONS
     // =============================================
+    // Horas de un cargo del equipo directivo: solo cuentan cuando el cargo
+    // tiene profesor/a con nombre (criterio único, antes repetido en tres
+    // sitios: renderDirectivo, updateDirectivoTotals y computeResumenData).
+    function dirHoursFor(role) {
+        var d = equipoDirectivo && equipoDirectivo[role];
+        return (d && d.name && String(d.name).trim()) ? (parseInt(d.hours, 10) || 0) : 0;
+    }
+
+    function dirTotalHours() {
+        return dirHoursFor('director') + dirHoursFor('jefatura') + dirHoursFor('secretaria');
+    }
+
     function recalculateAll() {
         updateDirectivoTotals();
         calculateAllHours();
@@ -5916,10 +5859,7 @@
     }
 
     function updateDirectivoTotals() {
-        function getDirHours(role) {
-            return (equipoDirectivo[role].name && equipoDirectivo[role].name.trim()) ? equipoDirectivo[role].hours : 0;
-        }
-        const total = getDirHours('director') + getDirHours('jefatura') + getDirHours('secretaria');
+        const total = dirTotalHours();
 
         const totalEl = document.getElementById('total-directivo');
         if (totalEl) totalEl.textContent = total;
@@ -5975,10 +5915,7 @@
     // y la tabla de criterios del Informe PDF.
     function computeResumenData() {
         // Horas del equipo directivo (solo contar si hay nombre asignado)
-        function getDirHours(role) {
-            return (equipoDirectivo[role].name && equipoDirectivo[role].name.trim()) ? equipoDirectivo[role].hours : 0;
-        }
-        var directivo = getDirHours('director') + getDirHours('jefatura') + getDirHours('secretaria');
+        var directivo = dirTotalHours();
 
         // --- Condición 2: departamentos didácticos (JD de DCD: 2h por jefatura) ---
         var dcd = 0;
@@ -6450,7 +6387,7 @@
 
         // Directivo hours changes (event delegation on container)
         document.getElementById('directivoContent').addEventListener('input', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const target = e.target;
             const field = target.dataset.directivo;
             if (!field) return;
@@ -6460,7 +6397,7 @@
             const prop = parts[1];
 
             if (prop === 'hours') {
-                equipoDirectivo[role].hours = parseInt(target.value) || 0;
+                equipoDirectivo[role].hours = parseInt(target.value, 10) || 0;
                 updateDirectivoTotals();
                 calculateResumenGeneral();
                 debouncedFirebaseSave();
@@ -6469,7 +6406,7 @@
 
         // Directivo name picker (click to select teacher from modal)
         document.getElementById('directivoContent').addEventListener('click', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             var picker = e.target.closest('[data-directivo-pick]');
             if (picker && !picker.hasAttribute('disabled')) {
                 var key = picker.dataset.directivoPick;
@@ -6490,7 +6427,7 @@
 
         // Focus: update datalist options for this department
         dcdGrid.addEventListener('focusin', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const target = e.target;
             if (target.classList.contains('prof-name') && target.dataset.dept) {
                 updateDatalistForInput(target);
@@ -6498,13 +6435,13 @@
         });
 
         dcdGrid.addEventListener('input', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const target = e.target;
 
             // Professor name change
             if (target.classList.contains('prof-name') && target.dataset.dept) {
                 const deptId = target.dataset.dept;
-                const index = parseInt(target.dataset.index);
+                const index = parseInt(target.dataset.index, 10);
                 var dep = getDcd(deptId);
                 if (!dep || !dep.professors[index]) return;
                 dep.professors[index].name = target.value;
@@ -6521,13 +6458,13 @@
         });
 
         dcdGrid.addEventListener('change', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const target = e.target;
             var deptId = target.dataset.dept;
             if (!deptId) return;
             var dep = getDcd(deptId);
             if (!dep) return;
-            const index = parseInt(target.dataset.index);
+            const index = parseInt(target.dataset.index, 10);
             if (isNaN(index) || !dep.professors[index]) return;
 
             // Active checkbox
@@ -6555,7 +6492,7 @@
 
         // DCD buttons: add row / remove row / edit dept / delete dept
         dcdGrid.addEventListener('click', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
 
             const addBtn = e.target.closest('[data-add-prof]');
             if (addBtn) {
@@ -6573,7 +6510,7 @@
             if (removeBtn) {
                 const parts = removeBtn.dataset.removeProf.split('|');
                 var depRem = getDcd(parts[0]);
-                const idx = parseInt(parts[1]);
+                const idx = parseInt(parts[1], 10);
                 if (depRem) {
                     if (depRem.professors.length <= 1) {
                         showNotification('El departamento debe tener al menos un profesor', 'error');
@@ -6613,10 +6550,10 @@
         // Orientación
         // =============================================
         document.getElementById('orientacionSection').addEventListener('input', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const target = e.target;
             if (target.classList.contains('prof-name') && target.dataset.orientacionIndex !== undefined) {
-                const index = parseInt(target.dataset.orientacionIndex);
+                const index = parseInt(target.dataset.orientacionIndex, 10);
                 data.orientacion[index].name = target.value;
                 debouncedFirebaseSave();
                 // El nombre de la jefatura de Orientación cambia las horas
@@ -6626,7 +6563,7 @@
         });
 
         document.getElementById('orientacionSection').addEventListener('focusin', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const target = e.target;
             if (target.classList.contains('prof-name') && target.getAttribute('list') === 'dl-orientacion') {
                 updateOrientacionDatalist(target);
@@ -6634,11 +6571,11 @@
         });
 
         document.getElementById('orientacionSection').addEventListener('change', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const target = e.target;
 
             if (target.classList.contains('orientacion-jd') && target.checked) {
-                const index = parseInt(target.dataset.orientacionIndex);
+                const index = parseInt(target.dataset.orientacionIndex, 10);
                 data.orientacion.forEach(function(p, i) {
                     p.jd = (i === index);
                 });
@@ -6650,7 +6587,7 @@
 
             // Active checkbox
             if (target.classList.contains('prof-active-orientacion')) {
-                const index = parseInt(target.dataset.orientacionIndex);
+                const index = parseInt(target.dataset.orientacionIndex, 10);
                 data.orientacion[index].active = target.checked;
                 renderOrientacion();
                 recalculateAll();
@@ -6661,10 +6598,10 @@
 
         // Remove orientacion professor
         document.getElementById('orientacionSection').addEventListener('click', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             const removeBtn = e.target.closest('[data-remove-orientacion]');
             if (removeBtn) {
-                const index = parseInt(removeBtn.dataset.removeOrientacion);
+                const index = parseInt(removeBtn.dataset.removeOrientacion, 10);
                 if (data.orientacion.length <= 1) {
                     showNotification('Orientación debe tener al menos un profesor', 'error');
                     return;
@@ -6682,13 +6619,13 @@
         var otrosGrid = document.getElementById('otrosDptosGrid');
 
         otrosGrid.addEventListener('input', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             var target = e.target;
             var deptId = target.dataset.dept;
             if (!deptId) return;
             var dep = data.otrosDptos.find(function(d) { return d.id === deptId; });
             if (!dep) return;
-            var index = parseInt(target.dataset.index);
+            var index = parseInt(target.dataset.index, 10);
             if (isNaN(index) || !dep.puestos[index]) return;
 
             if (target.classList.contains('puesto-nombre')) {
@@ -6703,13 +6640,13 @@
         });
 
         otrosGrid.addEventListener('change', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             var target = e.target;
             var deptId = target.dataset.dept;
             if (!deptId) return;
             var dep = data.otrosDptos.find(function(d) { return d.id === deptId; });
             if (!dep) return;
-            var index = parseInt(target.dataset.index);
+            var index = parseInt(target.dataset.index, 10);
             if (isNaN(index) || !dep.puestos[index]) return;
 
             // Reducción checkbox: enables/disables the hours input
@@ -6723,14 +6660,14 @@
         });
 
         otrosGrid.addEventListener('click', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
 
             // Responsable picker for a puesto
             var picker = e.target.closest('[data-puesto-pick]');
             if (picker && !picker.hasAttribute('disabled')) {
                 var pParts = picker.dataset.puestoPick.split('|');
                 var pDepId = pParts[0];
-                var pIdx = parseInt(pParts[1]);
+                var pIdx = parseInt(pParts[1], 10);
                 var pDep = data.otrosDptos.find(function(d) { return d.id === pDepId; });
                 if (!pDep || !pDep.puestos[pIdx]) return;
                 setupTeacherPicker(pDep.puestos[pIdx].responsable || '', function(selectedName) {
@@ -6759,7 +6696,7 @@
                 var dParts = delPuestoBtn.dataset.puestoDel.split('|');
                 var depDel = data.otrosDptos.find(function(d) { return d.id === dParts[0]; });
                 if (depDel) {
-                    depDel.puestos.splice(parseInt(dParts[1]), 1);
+                    depDel.puestos.splice(parseInt(dParts[1], 10), 1);
                     renderOtrosDptos();
                     recalculateAll();
                     debouncedFirebaseSave();
@@ -6792,7 +6729,7 @@
         var otrasSection = document.getElementById('otrasReduccionesSection');
 
         otrasSection.addEventListener('input', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             var target = e.target;
             if (target.classList.contains('otra-horas') && target.dataset.otraId) {
                 var rH = data.otrasReducciones.find(function(x) { return x.id === target.dataset.otraId; });
@@ -6819,7 +6756,7 @@
         });
 
         otrasSection.addEventListener('click', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
 
             // Add reduction button (rendered dynamically)
             if (e.target.closest('#addOtraRedBtn')) {
@@ -7318,19 +7255,19 @@
 
         list.querySelectorAll('.dm-puesto-nombre').forEach(function(inp) {
             inp.addEventListener('input', function() {
-                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow);
+                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow, 10);
                 deptModalState.puestos[idx].nombre = this.value;
             });
         });
         list.querySelectorAll('.dm-puesto-resp').forEach(function(sel) {
             sel.addEventListener('change', function() {
-                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow);
+                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow, 10);
                 deptModalState.puestos[idx].responsable = this.value;
             });
         });
         list.querySelectorAll('.dm-puesto-red').forEach(function(chk) {
             chk.addEventListener('change', function() {
-                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow);
+                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow, 10);
                 deptModalState.puestos[idx].reduccion = this.checked;
                 var horasInp = list.querySelector('[data-puesto-row="' + idx + '"] .dm-puesto-horas');
                 if (horasInp) {
@@ -7342,13 +7279,13 @@
         });
         list.querySelectorAll('.dm-puesto-horas').forEach(function(inp) {
             inp.addEventListener('input', function() {
-                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow);
+                var idx = parseInt(this.closest('.puesto-row').dataset.puestoRow, 10);
                 deptModalState.puestos[idx].horas = parseInt(this.value, 10) || 0;
             });
         });
         list.querySelectorAll('[data-dm-puesto-del]').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                var idx = parseInt(btn.dataset.dmPuestoDel);
+                var idx = parseInt(btn.dataset.dmPuestoDel, 10);
                 deptModalState.puestos.splice(idx, 1);
                 renderDeptModalPuestos();
             });
@@ -8593,6 +8530,11 @@
     // PWA FUNCTIONALITY
     // =============================================
     function setupPWA() {
+        // Bugfix: TODO el acceso a navigator.serviceWorker queda dentro del
+        // guard. Antes, el listener de 'controllerchange' estaba FUERA: en un
+        // navegador sin soporte de service workers (navegadores incrustados,
+        // privacidad estricta...) navigator.serviceWorker es undefined y el
+        // TypeError rompía el arranque entero de la app.
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('./sw.js')
@@ -8607,27 +8549,43 @@
                     })
                     .catch(function(err) { console.log('Error ServiceWorker: ', err); });
             });
+
+            // Aviso de nueva versión SOLO cuando un service worker DISTINTO
+            // toma el control de la página: en la primera instalación no hay
+            // aviso (no es una "nueva" versión, es la primera vez que se
+            // instala) y tras cualquier controllerchange ya se considera
+            // controlado, de modo que el siguiente cambio sí avisa.
+            var wasControlled = !!navigator.serviceWorker.controller;
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+                if (wasControlled) {
+                    showNotification('Nueva versión disponible. Recarga la aplicación.', 'info');
+                }
+                wasControlled = true;
+            });
         }
 
+        // Botón "Instalar": el listener de clic se registra UNA sola vez.
+        // Bugfix: antes se añadía un listener nuevo dentro de cada evento
+        // 'beforeinstallprompt' (que puede dispararse varias veces), de modo
+        // que un solo clic podía lanzar prompt() duplicado.
         let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
         window.addEventListener('beforeinstallprompt', function(e) {
             e.preventDefault();
             deferredPrompt = e;
-            const btn = document.getElementById('installBtn');
-            btn.style.display = 'flex';
-            btn.addEventListener('click', function() {
-                btn.style.display = 'none';
+            if (installBtn) installBtn.style.display = 'flex';
+        });
+        if (installBtn) {
+            installBtn.addEventListener('click', function() {
+                if (!deferredPrompt) return;
+                installBtn.style.display = 'none';
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then(function(choiceResult) {
                     console.log('Install choice: ', choiceResult.outcome);
                     deferredPrompt = null;
                 });
             });
-        });
-
-        navigator.serviceWorker.addEventListener('controllerchange', function() {
-            showNotification('Nueva versión disponible. Recarga la aplicación.', 'info');
-        });
+        }
     }
 
     // =============================================
@@ -8724,7 +8682,7 @@
         setupSaveLifecycle();
 
         // Load users panel for admin
-        if (currentUser && currentUser.role === 'admin') {
+        if (isAdminUser()) {
             loadUsersPanel();
         }
     }
@@ -8812,7 +8770,7 @@
             saveLocalUsers(localUsers);
 
             // Remove from deletedUsers list if was previously deleted
-            var deletedArr = JSON.parse(localStorage.getItem('deletedUsers') || '[]');
+            var deletedArr = getDeletedUsers();
             var delIdx = deletedArr.indexOf(username);
             if (delIdx !== -1) {
                 deletedArr.splice(delIdx, 1);
@@ -8919,10 +8877,10 @@
 
         // Profesorado list delegation (edit, delete, delete all)
         document.getElementById('profesoradoSection').addEventListener('input', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
             var editInput = e.target.closest('[data-teacher-edit]');
             if (editInput) {
-                var idx = parseInt(editInput.dataset.teacherEdit);
+                var idx = parseInt(editInput.dataset.teacherEdit, 10);
                 if (data.profesorado && data.profesorado[idx] !== undefined) {
                     data.profesorado[idx] = editInput.value.trim();
                 }
@@ -8941,7 +8899,7 @@
         });
 
         document.getElementById('profesoradoSection').addEventListener('click', function(e) {
-            if (currentUser && currentUser.role !== 'admin') return;
+            if (!isAdminUser()) return;
 
             // Delete all teachers (also clears every assignment in the document)
             var delAllBtn = e.target.closest('#deleteAllTeachersBtn');
@@ -8968,7 +8926,7 @@
             // Delete individual teacher
             var delBtn = e.target.closest('[data-teacher-del]');
             if (delBtn) {
-                var idx = parseInt(delBtn.dataset.teacherDel);
+                var idx = parseInt(delBtn.dataset.teacherDel, 10);
                 if (data.profesorado && data.profesorado[idx] !== undefined) {
                     data.profesorado.splice(idx, 1);
                 }
