@@ -1594,7 +1594,9 @@
             margin: 0 0 12px;
         }
 
-        .consulta-prof-controls { display: flex; gap: 10px; align-items: center; }
+        /* flex-wrap: la fila de controles (input + Añadir + Sin reducciones +
+           Limpiar) envuelve en pantallas estrechas en vez de desbordar. */
+        .consulta-prof-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 
         .consulta-prof-controls input {
             flex: 1;
@@ -1950,10 +1952,15 @@
            media altura del lado derecho de la pantalla (req. usuario). */
         .resumen-screen { padding: 10px 30px 30px; }
 
+        /* El botón "Resumen general" es un conmutador (req. usuario): la
+           intensidad de su color refleja el estado.
+           - Reposo (Home, resumen oculto): verde tenue translúcido.
+           - Activo (.is-active, resumen en pantalla): verde saturado con
+             halo; máxima intensidad. */
         .resumen-open-btn {
-            background: #2b8a3e;
-            color: #fff;
-            border: none;
+            background: rgba(47, 158, 68, 0.20);
+            color: #b2f2bb;
+            border: 1px solid rgba(47, 158, 68, 0.55);
             border-radius: 8px;
             padding: 8px 14px;
             font-size: 0.8rem;
@@ -1964,10 +1971,26 @@
             gap: 6px;
             font-family: inherit;
             white-space: nowrap;
-            transition: background 0.2s, transform 0.2s;
+            transition: background 0.2s, transform 0.2s, color 0.2s,
+                        border-color 0.2s, box-shadow 0.2s;
         }
-        .resumen-open-btn:hover { background: #2f9e44; transform: translateY(-1px); }
+        .resumen-open-btn:hover {
+            background: rgba(47, 158, 68, 0.34);
+            transform: translateY(-1px);
+        }
+        .resumen-open-btn:focus-visible {
+            outline: 2px solid #69db7c;
+            outline-offset: 2px;
+        }
         .resumen-open-btn i { font-size: 0.85rem; }
+        .resumen-open-btn.is-active {
+            background: #2b8a3e;
+            color: #fff;
+            border-color: #37b24d;
+            box-shadow: 0 4px 14px rgba(43, 138, 62, 0.55),
+                        0 0 0 3px rgba(55, 178, 77, 0.25);
+        }
+        .resumen-open-btn.is-active:hover { background: #2f9e44; }
 
         .resumen-back-btn {
             position: fixed;
@@ -2753,8 +2776,11 @@
         }
         .directivo-content table { min-width: 430px; }
 
-        @media (max-width: 1100px) {
-            /* Tablet: el resumen general en 2 columnas (antes pasaba de 3 a 1) */
+        @media (min-width: 769px) and (max-width: 1100px) {
+            /* Tablet: el resumen general en 2 columnas. Se limita a ≥769px para
+               no pisar la regla de móvil (1 columna) que aparece antes en la
+               hoja: con la misma especificidad, la última regla ganaría y el
+               resumen desbordaba en pantallas estrechas. */
             .resumen-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
@@ -2924,7 +2950,7 @@
                             <span class="sync-sub" id="syncSub"></span>
                         </span>
                     </div>
-                    <button class="resumen-open-btn" id="openResumenBtn" title="Ver el resumen general de horas"><i class="fas fa-chart-bar"></i> Resumen general</button>
+                    <button class="resumen-open-btn" id="openResumenBtn" type="button" aria-pressed="false" title="Ver el resumen general de horas"><i class="fas fa-chart-bar"></i> Resumen general</button>
                     <div class="install-button-container">
                         <button class="install-btn-header" id="installBtn"><i class="fas fa-download"></i> Instalar</button>
                     </div>
@@ -4176,8 +4202,41 @@
         }
         currentUser = null;
         localStorage.removeItem('currentUser');
+        // Volver siempre a Home al salir: evita que la sesión siguiente
+        // herede la pantalla "Resumen general" y el botón quede desincronizado.
+        showDashboard();
         document.getElementById('loginOverlay').classList.remove('hidden');
         document.getElementById('mainApp').style.display = 'none';
+    }
+
+    // ===== Resumen General: helpers de nivel de script =====
+    // El botón "Resumen general" del banner es un CONMUTADOR (req. usuario):
+    // la primera pulsación muestra el resumen y la segunda lo recoge y vuelve
+    // a la pantalla Home. La intensidad de su color refleja el estado. Estos
+    // helpers viven a nivel de script (no dentro del bootstrap) para que
+    // handleLogout también pueda reiniciar la vista al cerrar sesión.
+    var RESUMEN_BTN_TITLES = {
+        open: 'Ver el resumen general de horas',
+        close: 'Recoger el resumen general y volver a la pantalla principal'
+    };
+    function setResumenButtonState(isActive) {
+        var btn = document.getElementById('openResumenBtn');
+        if (!btn) return;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        btn.title = isActive ? RESUMEN_BTN_TITLES.close : RESUMEN_BTN_TITLES.open;
+    }
+    function isResumenScreenVisible() {
+        var rs = document.getElementById('resumenScreen');
+        return !!rs && rs.style.display !== 'none';
+    }
+    function showDashboard() {
+        var rs = document.getElementById('resumenScreen');
+        var dv = document.getElementById('dashboardView');
+        if (rs) rs.style.display = 'none';
+        if (dv) dv.style.display = '';
+        setResumenButtonState(false);
+        window.scrollTo(0, 0);
     }
 
     function setupUserInterface() {
@@ -8984,21 +9043,28 @@
         document.getElementById('printBtn').addEventListener('click', printA3);
 
         // ===== Resumen General: pantalla independiente =====
+        // El botón de la cabecera es un CONMUTADOR (req. usuario): la primera
+        // pulsación muestra el resumen y la segunda lo recoge y vuelve a la
+        // pantalla Home. El botón flotante "Volver" sigue disponible. Los
+        // helpers (setResumenButtonState / showDashboard / ...) están a nivel
+        // de script, junto a handleLogout.
         function showResumenScreen() {
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('resumenScreen').style.display = 'block';
+            setResumenButtonState(true);
             calculateResumenGeneral();
             // Consulta personal: refresca el desplegable y re-renderiza la selección pendiente
             refreshConsultaDatalist();
             renderConsultaProf();
             window.scrollTo(0, 0);
         }
-        function showDashboard() {
-            document.getElementById('resumenScreen').style.display = 'none';
-            document.getElementById('dashboardView').style.display = '';
-            window.scrollTo(0, 0);
-        }
-        document.getElementById('openResumenBtn').addEventListener('click', showResumenScreen);
+        document.getElementById('openResumenBtn').addEventListener('click', function() {
+            if (isResumenScreenVisible()) {
+                showDashboard();   // 2ª pulsación: recoger y volver a Home
+            } else {
+                showResumenScreen();
+            }
+        });
         document.getElementById('resumenBackBtn').addEventListener('click', showDashboard);
 
         // ===== Barra de estado del Resumen: incidencias navegables =====
