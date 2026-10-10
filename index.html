@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- PWA Meta Tags -->
     <meta name="application-name" content="Reducciones Horarias">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,6 +12,8 @@
     <meta name="msapplication-TileColor" content="#4dabf7">
     <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
     <meta name="theme-color" content="#4dabf7">
+    <meta name="color-scheme" content="light">
+    <meta name="format-detection" content="telephone=no">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
@@ -50,7 +52,14 @@
             color: #333;
             background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
             padding: 10px;
+            /* Multiplataforma: respeta notch/bordes curvos cuando la PWA está
+               instalada (iPhone/iPad, Android, escritorio). El padding simple
+               queda como respaldo para navegadores sin env(). */
+            padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
             min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         /* Smooth transitions for theme changes */
@@ -162,40 +171,109 @@
             position: relative;
         }
 
+        /* El contenido del banner ocupa TODA su anchura (req. usuario):
+           sin tope de 1200 px. El grupo de contexto (curso, sincronización,
+           resumen, instalar) queda a la izquierda y el grupo de sesión
+           (Manual · usuario · Cerrar sesión) se alinea a la derecha. */
         .header-content {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 15px;
+            gap: 12px 20px;
             flex-wrap: wrap;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            min-width: 0;
+            flex-wrap: wrap;
         }
 
         h1 {
-            font-size: 1.8rem;
+            /* Título fluido: se adapta a móviles sin romperse y recorta con
+               puntos suspensivos si el ancho no da más de sí. */
+            font-size: clamp(1.15rem, 1.2rem + 1.1vw, 1.8rem);
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 10px;
             white-space: nowrap;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .header-title-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         h1 i {
             color: var(--accent);
+            flex-shrink: 0;
         }
+
+        /* ===== CHIP DE VERSIÓN (a la derecha de "Reducciones Horarias") =====
+           Muestra la versión de la aplicación tomada del service worker
+           (CACHE_NAME de sw.js) de forma dinámica: si cambia el sw, el chip
+           se actualiza solo (req. usuario). */
+        .app-version-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #e7f5ff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            cursor: help;
+            min-height: 26px;
+            flex-shrink: 0;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .app-version-chip:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .app-version-chip i {
+            color: var(--accent);
+            font-size: 0.66rem;
+        }
+
+        .app-version-chip.pending { opacity: 0.55; }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: space-between;
+            gap: 10px 20px;
             flex-wrap: wrap;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        /* Grupos del banner: a la izquierda los controles de contexto y a la
+           derecha los de sesión (Manual de xxx · usuario · Cerrar sesión). */
+        .header-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .header-group-session {
+            justify-content: flex-end;
+            margin-left: auto;
         }
 
         .course-selector {
@@ -239,6 +317,7 @@
         .user-name {
             font-weight: 600;
             max-width: 150px;
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -2453,10 +2532,18 @@
             .otras-grid, .resumen-grid { grid-template-columns: 1fr; }
             .resumen-item.total { grid-column: span 1; }
 
-            header { padding: 15px 20px; }
-            .header-content { flex-direction: column; align-items: flex-start; }
-            .header-right { width: 100%; justify-content: space-between; }
-            h1 { font-size: 1.4rem; }
+            header { padding: 14px 18px; }
+            /* Móvil: el banner se apila. Cada grupo ocupa su fila completa;
+               el grupo de sesión mantiene el orden Manual · usuario · Cerrar
+               sesión y se alinea a la derecha (mismo criterio que escritorio). */
+            .header-content { flex-direction: column; align-items: stretch; gap: 10px; }
+            .header-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
+            .header-right { width: 100%; flex-direction: column; align-items: stretch; gap: 10px; }
+            .header-group { width: 100%; }
+            .header-group-session { justify-content: flex-end; }
+            h1 { font-size: 1.35rem; }
+            .app-version-chip { padding: 3px 10px; font-size: 0.66rem; }
+            .user-name { max-width: 30vw; }
 
             .config-panels { grid-template-columns: 1fr; }
 
@@ -2582,6 +2669,221 @@
             }
 
             @page { size: A3 landscape; margin: 0.5cm; }
+
+            /* Al imprimir, TODAS las secciones desplegadas aunque estén
+               plegadas en pantalla (el papel siempre muestra el contenido). */
+            .section-collapsible .section-collapse-body { grid-template-rows: 1fr !important; }
+            .section-collapsible.section-collapsed .section-collapse-body { grid-template-rows: 1fr !important; }
+            .section-collapsed > .directivo-title,
+            .section-collapsed > .orientacion-title,
+            .section-collapsed > .section-header { margin-bottom: 20px !important; }
+            [data-section-toggle] { cursor: default !important; }
+            .section-chevron { display: none !important; }
+        }
+
+        /* ===== 12. ACORDEONES DE SECCIÓN (pantalla principal) ===== */
+        /* Todas las secciones del dashboard se comportan como acordeones
+           INDEPENDIENTES: se pliega/despliega cada una por separado y NO hay
+           límite en cuántas pueden estar desplegadas a la vez (req. usuario).
+           La clase .section-collapsed vive en el CONTENEDOR estático de la
+           sección, así el estado sobrevive a los re-renderizados dinámicos
+           (Otras reducciones y Orientación se redibujan con cada cambio). */
+        [data-section-toggle] {
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        [data-section-toggle]:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 4px;
+            border-radius: 8px;
+        }
+
+        /* Cuerpo plegable: la fila de la rejilla pasa de 0fr (plegada) a 1fr
+           (desplegada); anima cualquier altura sin recortar contenido largo. */
+        .section-collapsible .section-collapse-body {
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 0.35s ease;
+        }
+
+        .section-collapsible.section-collapsed .section-collapse-body {
+            grid-template-rows: 0fr;
+        }
+
+        .section-collapse-inner {
+            overflow: hidden;
+            overflow: clip; /* clip: no crea contexto de scroll (sticky intacto) */
+            min-height: 0;
+            min-width: 0; /* imprescindible: la rejilla no deja encoger el ítem y la página se iría de ancho */
+        }
+
+        /* Chevron junto al título: gira al plegar (apunta abajo = abierto) */
+        .section-chevron {
+            margin-left: 12px;
+            font-size: 0.85em;
+            opacity: 0.75;
+            vertical-align: middle;
+            transition: transform 0.3s ease;
+        }
+
+        .section-collapsed .section-chevron { transform: rotate(-90deg); }
+
+        /* Al plegar, la sección (que tiene fondo de color) no deja aire
+           sobrante: se anulan el margen inferior de la cabecera y el padding
+           inferior del contenedor. */
+        .section-collapsed > .directivo-title,
+        .section-collapsed > .orientacion-title,
+        .section-collapsed > .section-header {
+            margin-bottom: 0;
+            transition: margin-bottom 0.3s ease;
+        }
+
+        .section-collapsible { transition: padding-bottom 0.3s ease; }
+
+        /* ===== 13. RESPONSIVIDAD POTENCIADA (móvil / tablet / multiplataforma) ===== */
+        /* Objetivos táctiles: botones del banner y controles con altura mínima
+           cómoda para el dedo y sin retardo de doble toque en iOS. */
+        button, a[role="button"], [role="button"], .otras-name-picker, .config-btn {
+            touch-action: manipulation;
+        }
+
+        /* Equipo directivo: su tabla es la más ancha de la app; en pantallas
+           estrechas se desplaza dentro de su tarjeta (nunca rompe la página). */
+        .directivo-content {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .directivo-content table { min-width: 430px; }
+
+        @media (max-width: 1100px) {
+            /* Tablet: el resumen general en 2 columnas (antes pasaba de 3 a 1) */
+            .resumen-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Phablets y móviles grandes */
+        @media (max-width: 768px) {
+            /* Evita el auto-zoom de iOS Safari al enfocar campos < 16px */
+            input[type="text"],
+            input[type="password"],
+            input[type="number"],
+            input[type="search"],
+            textarea { font-size: 16px !important; }
+
+            .modal-overlay { padding: 10px; }
+            .modal-box { width: 100%; max-height: 88vh; max-height: 88dvh; }
+            .modal-header { padding: 14px 16px; }
+
+            /* Equipo directivo en móvil: filas apiladas (mismo patrón que las
+               tablas de departamentos), sin scroll horizontal */
+            .directivo-content table { min-width: 0; }
+            .directivo-content thead { display: none; }
+            .directivo-content table,
+            .directivo-content tbody { display: block; width: 100%; }
+            .directivo-content tr {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 6px 10px;
+                padding: 8px 2px;
+                border-bottom: 1px solid #e9ecef;
+            }
+            .directivo-content tr:last-child { border-bottom: none; }
+            .directivo-content td {
+                display: block;
+                border-bottom: none;
+                padding: 0;
+                min-width: 0;
+            }
+            .directivo-content td:first-child { flex: 0 0 100%; font-weight: 600; color: #495057; }
+            .directivo-content td:nth-child(2) { flex: 1 1 58%; }
+            .directivo-content td:last-child { flex: 0 0 auto; }
+
+            .add-user-row { grid-template-columns: 1fr 1fr; }
+            .add-user-row .add-user-password { grid-column: auto; }
+
+            /* Botones de acción del banner: fila aprovechada */
+            .header-group-context { gap: 8px; }
+            .resumen-open-btn { flex: 0 1 auto; }
+
+            /* Acordeones: cabeceras táctiles más cómodas */
+            .section-title { font-size: 1.25rem; }
+            .directivo-title, .otras-title, .orientacion-title { font-size: 1.25rem; }
+        }
+
+        /* Móviles pequeños */
+        @media (max-width: 560px) {
+            body { padding: 8px; }
+
+            .notification {
+                left: 12px;
+                right: 12px;
+                top: 10px;
+                transform: translateY(-260%);
+                justify-content: center;
+                text-align: center;
+            }
+            .notification.show { transform: translateY(0); }
+
+            /* Grupo de sesión en móvil estrecho: "Manual de xxx" ocupa su fila
+               (etiqueta larga) y el chip de usuario queda a la izquierda del
+               botón "Cerrar sesión", como en escritorio. */
+            .header-group-session { gap: 8px; }
+            .header-group-session .manual-btn-header {
+                flex: 1 1 100%;
+                justify-content: center;
+                min-height: 42px;
+            }
+            .header-group-session .user-info {
+                flex: 1 1 auto;
+                min-width: 0;
+                justify-content: flex-start;
+                min-height: 42px;
+            }
+            .header-group-session .logout-btn { flex: 0 1 auto; min-height: 42px; }
+            .user-name { max-width: 32vw; }
+            .role-badge { font-size: 0.62rem; padding: 2px 8px; }
+
+            .header-group-context { gap: 8px; }
+            .header-group-context .resumen-open-btn {
+                flex: 1 1 100%;
+                justify-content: center;
+                min-height: 42px;
+            }
+            .header-group-context .install-btn-header { min-height: 42px; }
+            .course-selector { flex: 1 1 auto; min-width: 0; }
+            .course-selector select { max-width: 52vw; }
+            .sync-status { max-width: 160px; }
+
+            .section-title { font-size: 1.1rem; }
+            .directivo-title, .otras-title, .orientacion-title { font-size: 1.1rem; }
+            .section-chevron { margin-left: 8px; }
+        }
+
+        /* Móviles muy estrechos */
+        @media (max-width: 400px) {
+            .header-left { gap: 8px; }
+            .app-version-chip { padding: 3px 8px; }
+            .user-name { max-width: 26vw; }
+        }
+
+        /* Móvil en horizontal (pantalla baja): banner compacto */
+        @media (max-height: 480px) and (orientation: landscape) {
+            body { padding: 6px; }
+            header { padding: 10px 16px; }
+            .header-content { flex-wrap: wrap; row-gap: 8px; }
+            .sync-sub { display: none; }
+        }
+
+        /* Accesibilidad: usuarios con movimiento reducido (multiplataforma) */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
 </head>
@@ -2602,29 +2904,40 @@
         <header>
             <div class="header-content">
                 <div class="header-left">
-                    <h1><i class="fas fa-clock"></i> Reducciones Horarias</h1>
+                    <h1><i class="fas fa-clock"></i> <span class="header-title-text">Reducciones Horarias</span></h1>
+                    <!-- Chip de versión: se rellena de forma dinámica desde el
+                         service worker (CACHE_NAME de sw.js) -->
+                    <span class="app-version-chip pending" id="appVersionChip" title="Versión de la aplicación (service worker)"><i class="fas fa-code-branch"></i> v…</span>
                 </div>
                 <div class="header-right">
-                    <div class="course-selector">
-                        <label><i class="fas fa-calendar"></i> Curso:</label>
-                        <select id="courseSelector"></select>
+                    <!-- Grupo de CONTEXTO (izquierda del banner): curso,
+                         estado de sincronización, resumen general e instalación -->
+                    <div class="header-group header-group-context">
+                        <div class="course-selector">
+                            <label><i class="fas fa-calendar"></i> Curso:</label>
+                            <select id="courseSelector"></select>
+                        </div>
+                        <div class="sync-status state-connecting" id="syncStatus" title="Guardado automático activado: cada cambio se guarda al instante en este dispositivo y se sincroniza con la nube (Firebase). Otros dispositivos conectados ven los cambios en tiempo real.">
+                            <span class="sync-icon"><i class="fas fa-sync-alt" id="syncIconEl"></i></span>
+                            <span class="sync-labels">
+                                <span class="sync-main" id="syncText">Conectando...</span>
+                                <span class="sync-sub" id="syncSub"></span>
+                            </span>
+                        </div>
+                        <button class="resumen-open-btn" id="openResumenBtn" title="Ver el resumen general de horas"><i class="fas fa-chart-bar"></i> Resumen general</button>
+                        <div class="install-button-container">
+                            <button class="install-btn-header" id="installBtn"><i class="fas fa-download"></i> Instalar</button>
+                        </div>
                     </div>
-                    <div class="sync-status state-connecting" id="syncStatus" title="Guardado automático activado: cada cambio se guarda al instante en este dispositivo y se sincroniza con la nube (Firebase). Otros dispositivos conectados ven los cambios en tiempo real.">
-                        <span class="sync-icon"><i class="fas fa-sync-alt" id="syncIconEl"></i></span>
-                        <span class="sync-labels">
-                            <span class="sync-main" id="syncText">Conectando...</span>
-                            <span class="sync-sub" id="syncSub"></span>
-                        </span>
-                    </div>
-                    <div class="user-info" id="userInfo">
-                        <span class="user-name" id="userName"></span>
-                        <span class="role-badge" id="roleBadge"></span>
-                    </div>
-                    <button class="resumen-open-btn" id="openResumenBtn" title="Ver el resumen general de horas"><i class="fas fa-chart-bar"></i> Resumen general</button>
-                    <a class="manual-btn-header" id="manualBtn" title="Descargar el manual de uso en PDF"><i class="fas fa-book"></i> Manual</a>
-                    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
-                    <div class="install-button-container">
-                        <button class="install-btn-header" id="installBtn"><i class="fas fa-download"></i> Instalar</button>
+                    <!-- Grupo de SESIÓN (derecha del banner), en orden:
+                         Manual del perfil · chip de usuario · Cerrar sesión -->
+                    <div class="header-group header-group-session">
+                        <a class="manual-btn-header" id="manualBtn" title="Descargar el manual de uso en PDF"><i class="fas fa-book"></i> Manual</a>
+                        <div class="user-info" id="userInfo">
+                            <span class="user-name" id="userName"></span>
+                            <span class="role-badge" id="roleBadge"></span>
+                        </div>
+                        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
                     </div>
                 </div>
             </div>
@@ -2731,48 +3044,60 @@
         <!-- La banda "¡Atención! Se han detectado discrepancias" se eliminó a petición del usuario.
              Los avisos de horas esperadas siguen visibles en la pantalla "Resumen general". -->
 
-        <!-- Equipo Directivo -->
-        <div class="equipo-directivo" id="equipoDirectivoSection">
-            <h2 class="directivo-title"><i class="fas fa-users"></i> EQUIPO DIRECTIVO<span class="section-hours-badge zero" id="hoursBadge-directivo"></span></h2>
-            <div class="directivo-card">
-                <div class="directivo-header">
-                    <h3><i class="fas fa-user-tie"></i> Distribución de horas de reducción</h3>
-                </div>
-                <div class="directivo-content" id="directivoContent">
-                    <!-- Rendered dynamically -->
+        <!-- Equipo Directivo (acordeón independiente) -->
+        <div class="equipo-directivo section-collapsible" id="equipoDirectivoSection">
+            <h2 class="directivo-title" data-section-toggle="equipoDirectivoSection" role="button" tabindex="0" aria-expanded="true" title="Plegar o desplegar esta sección"><i class="fas fa-users"></i> EQUIPO DIRECTIVO<span class="section-hours-badge zero" id="hoursBadge-directivo"></span><i class="fas fa-chevron-down section-chevron" aria-hidden="true"></i></h2>
+            <div class="section-collapse-body">
+                <div class="section-collapse-inner">
+                    <div class="directivo-card">
+                        <div class="directivo-header">
+                            <h3><i class="fas fa-user-tie"></i> Distribución de horas de reducción</h3>
+                        </div>
+                        <div class="directivo-content" id="directivoContent">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Departamentos de Coordinación Didáctica -->
-        <div class="section-container" id="dcdSection">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fas fa-layer-group"></i> DEPARTAMENTOS DE COORDINACIÓN DIDÁCTICA<span class="section-hours-badge zero" id="hoursBadge-dcd"></span></h2>
+        <!-- Departamentos de Coordinación Didáctica (acordeón independiente) -->
+        <div class="section-container section-collapsible" id="dcdSection">
+            <div class="section-header" data-section-toggle="dcdSection" role="button" tabindex="0" aria-expanded="true" title="Plegar o desplegar esta sección">
+                <h2 class="section-title"><i class="fas fa-layer-group"></i> DEPARTAMENTOS DE COORDINACIÓN DIDÁCTICA<span class="section-hours-badge zero" id="hoursBadge-dcd"></span><i class="fas fa-chevron-down section-chevron" aria-hidden="true"></i></h2>
                 <button class="dept-action-btn dept-add-btn section-add-btn" id="addDcdDeptBtn"><i class="fas fa-plus"></i> Añadir departamento</button>
             </div>
-            <div class="areas-container" id="dcdGrid">
-                <!-- Rendered dynamically -->
+            <div class="section-collapse-body">
+                <div class="section-collapse-inner">
+                    <div class="areas-container" id="dcdGrid">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Otros Departamentos -->
-        <div class="section-container" id="otrosDptosSection">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fas fa-sitemap"></i> OTROS DEPARTAMENTOS<span class="section-hours-badge zero" id="hoursBadge-otros"></span></h2>
+        <!-- Otros Departamentos (acordeón independiente) -->
+        <div class="section-container section-collapsible" id="otrosDptosSection">
+            <div class="section-header" data-section-toggle="otrosDptosSection" role="button" tabindex="0" aria-expanded="true" title="Plegar o desplegar esta sección">
+                <h2 class="section-title"><i class="fas fa-sitemap"></i> OTROS DEPARTAMENTOS<span class="section-hours-badge zero" id="hoursBadge-otros"></span><i class="fas fa-chevron-down section-chevron" aria-hidden="true"></i></h2>
                 <button class="dept-action-btn dept-add-btn section-add-btn" id="addOtrosDeptBtn"><i class="fas fa-plus"></i> Añadir departamento</button>
             </div>
-            <div class="areas-container" id="otrosDptosGrid">
-                <!-- Rendered dynamically -->
+            <div class="section-collapse-body">
+                <div class="section-collapse-inner">
+                    <div class="areas-container" id="otrosDptosGrid">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Otras Reducciones -->
-        <div class="otras-reducciones" id="otrasReduccionesSection">
+        <!-- Otras Reducciones (acordeón independiente; contenido dinámico) -->
+        <div class="otras-reducciones section-collapsible" id="otrasReduccionesSection">
             <!-- Rendered dynamically -->
         </div>
 
-        <!-- Orientación (dynamic) · se sitúa DEBAJO de "Otras reducciones" -->
-        <div class="orientacion-container" id="orientacionSection">
+        <!-- Orientación (acordeón independiente; contenido dinámico) · se sitúa DEBAJO de "Otras reducciones" -->
+        <div class="orientacion-container section-collapsible" id="orientacionSection">
             <!-- Rendered dynamically -->
         </div>
 
@@ -3914,15 +4239,19 @@
         badge.textContent = currentUser.role === 'admin' ? 'Admin' : 'Usuario';
         badge.className = 'role-badge ' + currentUser.role;
 
-        // Botón "Manual" de la cabecera: cada perfil descarga su propio
-        // manual en PDF (req. usuario). Los PDF viven junto a index.html.
+        // Botón "Manual de xxx" de la cabecera (req. usuario): xxx es el perfil
+        // activo (Administrador/Profesorado) y cada perfil descarga su propio
+        // manual en PDF. Los PDF viven junto a index.html. El botón se sitúa
+        // a la izquierda del chip de usuario, en la parte derecha del banner.
         const manualBtn = document.getElementById('manualBtn');
         if (manualBtn) {
             const esAdmin = currentUser.role === 'admin';
+            const perfil = esAdmin ? 'Administrador' : 'Profesorado';
             const pdf = esAdmin ? 'manual-administrador.pdf' : 'manual-profesorado.pdf';
             manualBtn.href = pdf;
             manualBtn.setAttribute('download', pdf);
-            manualBtn.title = 'Descargar el manual de uso (' + (esAdmin ? 'Administrador' : 'Profesorado') + ') en PDF';
+            manualBtn.title = 'Descargar el manual de ' + perfil + ' en PDF';
+            manualBtn.innerHTML = '<i class="fas fa-book"></i> Manual de ' + perfil;
         }
 
         if (currentUser.role === 'admin') {
@@ -5250,7 +5579,12 @@
         const isAdmin = currentUser && currentUser.role === 'admin';
         const disabled = isAdmin ? '' : ' disabled';
 
-        let html = '<h2 class="orientacion-title"><i class="fas fa-graduation-cap"></i> Departamento de Orientación<span class="section-hours-badge zero" id="hoursBadge-orientacion"></span></h2>';
+        // Acordeón (req. usuario): la cabecera (título + badge + chevron) pliega
+        // y despliega el cuerpo. La clase .section-collapsed vive en el
+        // CONTENEDOR estático, por lo que el estado sobrevive a este re-render.
+        var oriExpanded = !container.classList.contains('section-collapsed');
+        let html = '<h2 class="orientacion-title" data-section-toggle="orientacionSection" role="button" tabindex="0" aria-expanded="' + (oriExpanded ? 'true' : 'false') + '" title="Plegar o desplegar esta sección"><i class="fas fa-graduation-cap"></i> Departamento de Orientación<span class="section-hours-badge zero" id="hoursBadge-orientacion"></span><i class="fas fa-chevron-down section-chevron" aria-hidden="true"></i></h2>';
+        html += '<div class="section-collapse-body"><div class="section-collapse-inner">';
         html += '<div class="orientacion-card">';
         html += '<div class="department-list"><div class="department-content">';
         html += '<table><colgroup><col>' + (isAdmin ? '<col style="width:44px"><col style="width:44px"><col style="width:52px"><col style="width:30px">' : '<col style="width:44px"><col style="width:44px"><col style="width:52px">') + '</colgroup><thead><tr>';
@@ -5295,7 +5629,9 @@
         html += '<div class="summary-item"><div class="summary-value">' + oriJdHours + ' h</div></div>';
         html += '</div>';
 
-        html += '</div></div></div>';
+        html += '</div></div>'; // /.department-content /.department-list
+        html += '</div>'; // /.orientacion-card
+        html += '</div></div>'; // /.section-collapse-inner /.section-collapse-body
 
         container.innerHTML = html;
 
@@ -5379,12 +5715,18 @@
         const isAdmin = currentUser && currentUser.role === 'admin';
         const disabled = isAdmin ? '' : ' disabled';
 
-        let html = '<div class="section-header">';
-        html += '<h2 class="section-title"><i class="fas fa-list-alt"></i> OTRAS REDUCCIONES LECTIVAS<span class="section-hours-badge zero" id="hoursBadge-otras"></span></h2>';
+        // Acordeón (req. usuario): la cabecera (título + badge + chevron, y el
+        // botón "Añadir reducción" si es admin) pliega y despliega el cuerpo.
+        // La clase .section-collapsed vive en el CONTENEDOR estático, así que
+        // el estado se conserva entre re-renderizados.
+        var otrasExpanded = !container.classList.contains('section-collapsed');
+        let html = '<div class="section-header" data-section-toggle="otrasReduccionesSection" role="button" tabindex="0" aria-expanded="' + (otrasExpanded ? 'true' : 'false') + '" title="Plegar o desplegar esta sección">';
+        html += '<h2 class="section-title"><i class="fas fa-list-alt"></i> OTRAS REDUCCIONES LECTIVAS<span class="section-hours-badge zero" id="hoursBadge-otras"></span><i class="fas fa-chevron-down section-chevron" aria-hidden="true"></i></h2>';
         if (isAdmin) {
             html += '<button class="dept-action-btn dept-add-btn section-add-btn" id="addOtraRedBtn"><i class="fas fa-plus"></i> Añadir reducción</button>';
         }
         html += '</div>';
+        html += '<div class="section-collapse-body"><div class="section-collapse-inner">';
         html += '<div class="otras-grid">';
 
         if (data.otrasReducciones.length === 0) {
@@ -5521,6 +5863,7 @@
         }
         html += '</div>'; // /.funciones-band-body
         html += '</div>'; // /.funciones-band
+        html += '</div></div>'; // /.section-collapse-inner /.section-collapse-body
 
         container.innerHTML = html;
     }
@@ -8101,13 +8444,167 @@
     setupConfigPanel._handler = null;
 
     // =============================================
+    // ACORDEONES DE SECCIÓN (pantalla principal)
+    // =============================================
+    // Todas las secciones del dashboard son acordeones INDEPENDIENTES (req.
+    // usuario): cada cabecera con [data-section-toggle] pliega/despliega SU
+    // sección y NO hay límite en cuántas pueden estar abiertas a la vez.
+    // El estado (lista de secciones plegadas) se recuerda en localStorage.
+    // La delegación en document sobrevive a los re-renderizados dinámicos de
+    // "Otras reducciones" y "Orientación" (su HTML se regenera constantemente).
+    var SECTION_ACCORDION_KEY = 'rh-collapsed-sections';
+
+    function getCollapsedSections() {
+        try {
+            var raw = JSON.parse(localStorage.getItem(SECTION_ACCORDION_KEY) || '[]');
+            return Array.isArray(raw) ? raw.filter(function(x) { return typeof x === 'string'; }) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function setSectionCollapsedState(id, collapsed) {
+        var list = getCollapsedSections();
+        var idx = list.indexOf(id);
+        if (collapsed && idx === -1) list.push(id);
+        if (!collapsed && idx !== -1) list.splice(idx, 1);
+        try { localStorage.setItem(SECTION_ACCORDION_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+
+    // Aplica el estado recordado a las cinco secciones plegables del dashboard
+    // (configuración ya tiene su propio acordeón histórico, sin cambios).
+    function applySectionAccordionState() {
+        var collapsed = getCollapsedSections();
+        ['equipoDirectivoSection', 'dcdSection', 'otrosDptosSection',
+         'otrasReduccionesSection', 'orientacionSection'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var isCollapsed = collapsed.indexOf(id) !== -1;
+            el.classList.toggle('section-collapsed', isCollapsed);
+            var head = el.querySelector('[data-section-toggle]');
+            if (head) head.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        });
+    }
+
+    function toggleSection(sectionEl) {
+        if (!sectionEl || !sectionEl.id) return;
+        var willCollapse = !sectionEl.classList.contains('section-collapsed');
+        sectionEl.classList.toggle('section-collapsed', willCollapse);
+        var head = sectionEl.querySelector('[data-section-toggle]');
+        if (head) head.setAttribute('aria-expanded', willCollapse ? 'false' : 'true');
+        setSectionCollapsedState(sectionEl.id, willCollapse);
+    }
+
+    function setupSectionAccordions() {
+        if (setupSectionAccordions._initialized) return;
+        setupSectionAccordions._initialized = true;
+
+        document.addEventListener('click', function(e) {
+            var head = e.target.closest('[data-section-toggle]');
+            if (!head) return;
+            // Los controles interactivos que viven dentro de la cabecera
+            // ("Añadir departamento/reducción/función"...) no pliegan la sección.
+            if (e.target.closest('button, a, input, select, textarea, label, .otras-name-picker')) return;
+            var section = head.closest('.section-collapsible');
+            if (section) toggleSection(section);
+        });
+
+        // Teclado (accesibilidad): Enter/Space pliegan como un clic
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            var head = e.target.closest && e.target.closest('[data-section-toggle]');
+            if (!head || head !== e.target) return;
+            e.preventDefault();
+            var section = head.closest('.section-collapsible');
+            if (section) toggleSection(section);
+        });
+    }
+    setupSectionAccordions._initialized = false;
+
+    // =============================================
+    // CHIP DE VERSIÓN (service worker)
+    // =============================================
+    // El chip del banner muestra la versión de la app tomada del service
+    // worker (CACHE_NAME de sw.js) y se actualiza SOLO cuando cambia el sw:
+    //  · mensaje SW_VERSION que el sw difunde al activarse,
+    //  · respuesta al mensaje GET_VERSION enviado al sw que controla la página,
+    //  · lectura directa de sw.js (respaldo si aún no hay SW activo).
+    function setAppVersion(version) {
+        var chip = document.getElementById('appVersionChip');
+        if (!chip) return;
+        var clean = String(version || '')
+            .replace(/^reducciones-/i, '')
+            .replace(/^v/i, '')
+            .trim();
+        if (!clean) return;
+        chip.textContent = 'v' + clean;
+        chip.classList.remove('pending');
+        chip.setAttribute('title', 'Versión de la aplicación: v' + clean +
+            ' (tomada del service worker; se actualiza sola al publicar un sw.js nuevo)');
+    }
+
+    function refreshAppVersionFromSWFile() {
+        // Respaldo/arranque: leer sw.js y extraer CACHE_NAME ('reducciones-vX.Y')
+        fetch('./sw.js', { cache: 'no-store' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('sw.js HTTP ' + res.status);
+                return res.text();
+            })
+            .then(function(text) {
+                var m = text.match(/CACHE_NAME\s*=\s*['"][^'"]*?([\d]+[.\d]*)['"]/);
+                if (m) setAppVersion(m[1]);
+            })
+            .catch(function() { /* sin red ni SW: se conserva el valor actual */ });
+    }
+
+    function setupAppVersion() {
+        if (!('serviceWorker' in navigator)) {
+            refreshAppVersionFromSWFile();
+            return;
+        }
+
+        // El SW activo difunde su versión (al activarse y cuando se le pregunta)
+        navigator.serviceWorker.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'SW_VERSION') setAppVersion(event.data.version);
+        });
+
+        var askActiveSW = function() {
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' });
+            }
+        };
+        askActiveSW();
+        refreshAppVersionFromSWFile(); // arranque (aún puede no haber SW activo)
+
+        // Cuando entre un SW nuevo (sw.js actualizado), refrescar el chip
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            askActiveSW();
+            refreshAppVersionFromSWFile();
+        });
+
+        // Al volver a la app (puede haberse actualizado el SW en segundo plano)
+        window.addEventListener('focus', function() {
+            askActiveSW();
+            refreshAppVersionFromSWFile();
+        });
+    }
+
+    // =============================================
     // PWA FUNCTIONALITY
     // =============================================
     function setupPWA() {
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(function(reg) { console.log('ServiceWorker registrado: ', reg.scope); })
+                    .then(function(reg) {
+                        console.log('ServiceWorker registrado: ', reg.scope);
+                        // Versión del chip: SW recién instalado o el activo
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' });
+                        } else if (reg.active && reg.active.state === 'activated') {
+                            reg.active.postMessage({ type: 'GET_VERSION' });
+                        }
+                    })
                     .catch(function(err) { console.log('Error ServiceWorker: ', err); });
             });
         }
@@ -8237,6 +8734,9 @@
     // =============================================
     document.addEventListener('DOMContentLoaded', function() {
         setupPWA();
+        setupAppVersion();          // Chip de versión (service worker) del banner
+        setupSectionAccordions();   // Acordeones del dashboard (delegación única)
+        applySectionAccordionState(); // Estado plegado/desplegado recordado
 
         // Migrate data from old collections to new namespaced ones (runs once)
         migrateOldDataIfNeeded();
