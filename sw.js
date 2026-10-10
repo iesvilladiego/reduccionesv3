@@ -1,6 +1,6 @@
 // CACHE_NAME ES la versión de la aplicación: la página la lee (chip del
 // banner) y se actualiza sola cuando se publica un sw.js nuevo.
-const CACHE_NAME = 'reducciones-v3.28';
+const CACHE_NAME = 'reducciones-v3.29';
 const ASSETS = [
     './',
     './index.html',
