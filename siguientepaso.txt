@@ -1,4 +1,0 @@
-Las horas de TDE y Escuela 4.0 no se computan bien.
-Haz que busque tarjetas "Coordinación TDE", "TDE" y similares o "Coordinación Escuela 4.0", "Escuela 4.0" y similares para ver las horas asignadas en sus tarjetas. El total indicado debe ser 5.
-Haz que la búsqueda de reducciones por profesores, en la pantalla "Resumen general" se pueda hacer sobre un profesor, dos o más, o todos los que tienen reducciones.
-Verifica si toda la información se exporta correctamente a .json y si se podría importar desde json. Se exporta el departamento de música, por ejemplo, que ya no existe en 2026-2027
